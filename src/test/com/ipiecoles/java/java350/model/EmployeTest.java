@@ -45,12 +45,12 @@ public class EmployeTest {
         e.setDateEmbauche(null);
 
         Assertions.assertThatThrownBy(() -> {
-                    //Then
-                    Integer anneeAnciennete = e.getNombreAnneeAnciennete();
-                }
-        )//When
-                .isInstanceOf(Exception.class)
-                .hasMessage("La date d'embauche est null");
+            //When
+            Integer anneeAnciennete = e.getNombreAnneeAnciennete();
+        })
+            //Then
+            .isInstanceOf(Exception.class)
+            .hasMessage("La date d'embauche est null");
     }
 
     @Test

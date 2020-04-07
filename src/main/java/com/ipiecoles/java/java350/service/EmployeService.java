@@ -59,6 +59,7 @@ public class EmployeService {
         if(tempsPartiel != null){
             salaire = salaire * tempsPartiel;
         }
+        salaire = Math.round(salaire*100d)/100d;
 
         //Création et sauvegarde en BDD de l'employé.
         Employe employe = new Employe(nom, prenom, matricule, LocalDate.now(), salaire, Entreprise.PERFORMANCE_BASE, tempsPartiel);

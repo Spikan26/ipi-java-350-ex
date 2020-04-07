@@ -150,4 +150,19 @@ public class EmployeTest {
                 .hasMessage("Le salaire est null");
     }
 
+    @Test
+    public void getNombreRTTNow() throws EmployeException {
+        //Given
+        Employe e = new Employe();
+        e.setDateEmbauche(LocalDate.now());
+
+        //When
+        Integer nombreRTT = e.getNbRtt();
+
+        //Then
+        Assertions.assertThat(nombreRTT.intValue()).isEqualTo(9);
+    }
+
+    
+
 }

@@ -6,7 +6,7 @@ import com.ipiecoles.java.java350.model.NiveauEtude;
 import com.ipiecoles.java.java350.model.Poste;
 import com.ipiecoles.java.java350.repository.EmployeRepository;
 import com.ipiecoles.java.java350.service.EmployeService;
-import org.junit.jupiter.api.Assertions;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -55,14 +55,14 @@ public class EmployeServiceTest {
         //Then
         ArgumentCaptor<Employe> employeArgumentCaptor = ArgumentCaptor.forClass(Employe.class);
         verify(employeRepository, times(1)).save(employeArgumentCaptor.capture());
-        Assertions.assertEquals(nom, employeArgumentCaptor.getValue().getNom());
-        Assertions.assertEquals(prenom, employeArgumentCaptor.getValue().getPrenom());
-        Assertions.assertEquals(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")), employeArgumentCaptor.getValue().getDateEmbauche().format(DateTimeFormatter.ofPattern("yyyyMMdd")));
-        Assertions.assertEquals("T00346", employeArgumentCaptor.getValue().getMatricule());
-        Assertions.assertEquals(tempsPartiel, employeArgumentCaptor.getValue().getTempsPartiel());
+        Assertions.assertThat(nom).isEqualTo(employeArgumentCaptor.getValue().getNom());
+        Assertions.assertThat(prenom).isEqualTo(employeArgumentCaptor.getValue().getPrenom());
+        Assertions.assertThat(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))).isEqualTo(employeArgumentCaptor.getValue().getDateEmbauche().format(DateTimeFormatter.ofPattern("yyyyMMdd")));
+        Assertions.assertThat("T00346").isEqualTo(employeArgumentCaptor.getValue().getMatricule());
+        Assertions.assertThat(tempsPartiel).isEqualTo(employeArgumentCaptor.getValue().getTempsPartiel());
 
         //1521.22 * 1.2 * 1.0
-        Assertions.assertEquals(1825.46, employeArgumentCaptor.getValue().getSalaire().doubleValue());
+        Assertions.assertThat(1825.46).isEqualTo(employeArgumentCaptor.getValue().getSalaire().doubleValue());
     }
 
     @Test
@@ -82,14 +82,15 @@ public class EmployeServiceTest {
         //Then
         ArgumentCaptor<Employe> employeArgumentCaptor = ArgumentCaptor.forClass(Employe.class);
         verify(employeRepository, times(1)).save(employeArgumentCaptor.capture());
-        Assertions.assertEquals(nom, employeArgumentCaptor.getValue().getNom());
-        Assertions.assertEquals(prenom, employeArgumentCaptor.getValue().getPrenom());
-        Assertions.assertEquals(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")), employeArgumentCaptor.getValue().getDateEmbauche().format(DateTimeFormatter.ofPattern("yyyyMMdd")));
-        Assertions.assertEquals("M00346", employeArgumentCaptor.getValue().getMatricule());
-        Assertions.assertEquals(tempsPartiel, employeArgumentCaptor.getValue().getTempsPartiel());
+
+        Assertions.assertThat(nom).isEqualTo(employeArgumentCaptor.getValue().getNom());
+        Assertions.assertThat(prenom).isEqualTo(employeArgumentCaptor.getValue().getPrenom());
+        Assertions.assertThat(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))).isEqualTo(employeArgumentCaptor.getValue().getDateEmbauche().format(DateTimeFormatter.ofPattern("yyyyMMdd")));
+        Assertions.assertThat("M00346").isEqualTo(employeArgumentCaptor.getValue().getMatricule());
+        Assertions.assertThat(tempsPartiel).isEqualTo(employeArgumentCaptor.getValue().getTempsPartiel());
 
         //1521.22 * 1.4 * 0.5
-        Assertions.assertEquals(1064.85, employeArgumentCaptor.getValue().getSalaire().doubleValue());
+        Assertions.assertThat(1064.85).isEqualTo(employeArgumentCaptor.getValue().getSalaire().doubleValue());
     }
 
     @Test
@@ -109,7 +110,7 @@ public class EmployeServiceTest {
         //Then
         ArgumentCaptor<Employe> employeArgumentCaptor = ArgumentCaptor.forClass(Employe.class);
         verify(employeRepository, times(1)).save(employeArgumentCaptor.capture());
-        Assertions.assertEquals("M00001", employeArgumentCaptor.getValue().getMatricule());
+        Assertions.assertThat("M00001").isEqualTo(employeArgumentCaptor.getValue().getMatricule());
     }
 
     @Test
@@ -123,9 +124,13 @@ public class EmployeServiceTest {
         when(employeRepository.findLastMatricule()).thenReturn(null);
         when(employeRepository.findByMatricule("M00001")).thenReturn(new Employe());
 
-        //When/Then
-        EntityExistsException e = Assertions.assertThrows(EntityExistsException.class, () -> employeService.embaucheEmploye(nom, prenom, poste, niveauEtude, tempsPartiel));
-        Assertions.assertEquals("L'employé de matricule M00001 existe déjà en BDD", e.getMessage());
+        Assertions.assertThatThrownBy(() -> {
+            //When
+            employeService.embaucheEmploye(nom, prenom, poste, niveauEtude, tempsPartiel);
+        })
+            //Then
+            .isInstanceOf(EntityExistsException.class)
+            .hasMessage("L'employé de matricule M00001 existe déjà en BDD");
     }
 
     @Test
@@ -138,8 +143,136 @@ public class EmployeServiceTest {
         Double tempsPartiel = 0.5;
         when(employeRepository.findLastMatricule()).thenReturn("99999");
 
-        //When/Then
-        EmployeException e = Assertions.assertThrows(EmployeException.class, () -> employeService.embaucheEmploye(nom, prenom, poste, niveauEtude, tempsPartiel));
-        Assertions.assertEquals("Limite des 100000 matricules atteinte !", e.getMessage());
+        Assertions.assertThatThrownBy(() -> {
+            //When
+            employeService.embaucheEmploye(nom, prenom, poste, niveauEtude, tempsPartiel);
+        })
+                //Then
+                .isInstanceOf(EmployeException.class)
+                .hasMessage("Limite des 100000 matricules atteinte !");
     }
+
+
+    @Test
+    public void testCalculPerformanceCommercialMatriculeDontExist() {
+        //Given
+        String matricule = "C00001";
+        Long caTraite = 30L;
+        Long objectifCa = 12345L;
+        try{
+            //When
+            employeService.calculPerformanceCommercial(matricule,caTraite,objectifCa);
+            Assertions.fail("Exception attendu");
+        } catch(EmployeException e){
+            //Then
+            org.assertj.core.api.Assertions.assertThat(e).isInstanceOf(EmployeException.class);
+            org.assertj.core.api.Assertions.assertThat(e.getMessage()).isEqualTo("Le matricule C00001 n'existe pas !");
+        }
+    }
+
+
+    @Test
+    public void testCalculPerformanceCommercialChiffreAffaireNegatif() {
+        //Given
+        String matricule = "C00001";
+        Long caTraite = -30L;
+        Long objectifCa = 12345L;
+        try{
+            //When
+            employeService.calculPerformanceCommercial(matricule,caTraite,objectifCa);
+            Assertions.fail("Exception attendu");
+        } catch(EmployeException e){
+            //Then
+            org.assertj.core.api.Assertions.assertThat(e).isInstanceOf(EmployeException.class);
+            org.assertj.core.api.Assertions.assertThat(e.getMessage()).isEqualTo("Le chiffre d'affaire traité ne peut être négatif ou null !");
+        }
+    }
+
+    @Test
+    public void testCalculPerformanceCommercialChiffreAffaireNull() {
+        //Given
+        String matricule = "C00001";
+        Long caTraite = null;
+        Long objectifCa = 12345L;
+        try{
+            //When
+            employeService.calculPerformanceCommercial(matricule,caTraite,objectifCa);
+            Assertions.fail("Exception attendu");
+        } catch(EmployeException e){
+            //Then
+            org.assertj.core.api.Assertions.assertThat(e).isInstanceOf(EmployeException.class);
+            org.assertj.core.api.Assertions.assertThat(e.getMessage()).isEqualTo("Le chiffre d'affaire traité ne peut être négatif ou null !");
+        }
+    }
+
+    @Test
+    public void testCalculPerformanceCommercialObjectifChiffreAffaireNegatif() {
+        //Given
+        String matricule = "C00001";
+        Long caTraite = 30L;
+        Long objectifCa = -12345L;
+        try{
+            //When
+            employeService.calculPerformanceCommercial(matricule,caTraite,objectifCa);
+            Assertions.fail("Exception attendu");
+        } catch(EmployeException e){
+            //Then
+            org.assertj.core.api.Assertions.assertThat(e).isInstanceOf(EmployeException.class);
+            org.assertj.core.api.Assertions.assertThat(e.getMessage()).isEqualTo("L'objectif de chiffre d'affaire ne peut être négatif ou null !");
+        }
+    }
+
+    @Test
+    public void testCalculPerformanceCommercialObjectifChiffreAffaireNull() {
+        //Given
+        String matricule = "C00001";
+        Long caTraite = 30L;
+        Long objectifCa = null;
+        try{
+            //When
+            employeService.calculPerformanceCommercial(matricule,caTraite,objectifCa);
+            Assertions.fail("Exception attendu");
+        } catch(EmployeException e){
+            //Then
+            org.assertj.core.api.Assertions.assertThat(e).isInstanceOf(EmployeException.class);
+            org.assertj.core.api.Assertions.assertThat(e.getMessage()).isEqualTo("L'objectif de chiffre d'affaire ne peut être négatif ou null !");
+        }
+    }
+
+    @Test
+    public void testCalculPerformanceCommercialMatriculeStartWithoutC() {
+        //Given
+        String matricule = "B00001";
+        Long caTraite = 30L;
+        Long objectifCa = 12345L;
+        try{
+            //When
+            employeService.calculPerformanceCommercial(matricule,caTraite,objectifCa);
+            Assertions.fail("Exception attendu");
+        } catch(EmployeException e){
+            //Then
+            org.assertj.core.api.Assertions.assertThat(e).isInstanceOf(EmployeException.class);
+            org.assertj.core.api.Assertions.assertThat(e.getMessage()).isEqualTo("Le matricule ne peut être null et doit commencer par un C !");
+        }
+    }
+
+    @Test
+    public void testCalculPerformanceCommercialMatriculeNull() {
+        //Given
+        String matricule = null;
+        Long caTraite = 30L;
+        Long objectifCa = 12345L;
+        try{
+            //When
+            employeService.calculPerformanceCommercial(matricule,caTraite,objectifCa);
+            Assertions.fail("Exception attendu");
+        } catch(EmployeException e){
+            //Then
+            org.assertj.core.api.Assertions.assertThat(e).isInstanceOf(EmployeException.class);
+            org.assertj.core.api.Assertions.assertThat(e.getMessage()).isEqualTo("Le matricule ne peut être null et doit commencer par un C !");
+        }
+    }
+
+
+
 }

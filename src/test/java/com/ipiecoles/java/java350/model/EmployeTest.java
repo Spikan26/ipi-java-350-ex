@@ -112,12 +112,12 @@ public class EmployeTest {
         Double pourcentage = -10.00;
 
         Assertions.assertThatThrownBy(() -> {
-                    //Then
-                    e.augmenterSalaire(pourcentage);
-                }
-        )//When
-                .isInstanceOf(Exception.class)
-                .hasMessage("Le pourcentage d'augmentation ne peut pas etre negatif");
+            //When
+            e.augmenterSalaire(pourcentage);
+        })
+            //Then
+            .isInstanceOf(Exception.class)
+            .hasMessage("Le pourcentage d'augmentation ne peut pas etre negatif");
 
     }
 
@@ -142,12 +142,12 @@ public class EmployeTest {
         Double pourcentage = 10.00;
 
         Assertions.assertThatThrownBy(() -> {
-                    //Then
-                    e.augmenterSalaire(pourcentage);
-                }
-        )//When
-                .isInstanceOf(Exception.class)
-                .hasMessage("Le salaire est null");
+            //When
+            e.augmenterSalaire(pourcentage);
+        })
+            //Then
+            .isInstanceOf(Exception.class)
+            .hasMessage("Le salaire est null");
     }
 
     @Test
@@ -163,6 +163,6 @@ public class EmployeTest {
         Assertions.assertThat(nombreRTT.intValue()).isEqualTo(9);
     }
 
-    
+
 
 }

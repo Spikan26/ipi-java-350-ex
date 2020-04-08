@@ -13,7 +13,6 @@ import java.util.Objects;
 @Entity
 public class Employe {
 
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;

@@ -150,6 +150,21 @@ public class EmployeTest {
             .hasMessage("Le salaire est null");
     }
 
+
+    @Test
+    public void getNombreCongesTest() throws EmployeException {
+        //Given
+        Employe e = new Employe();
+        e.setDateEmbauche(LocalDate.now());
+
+        //When
+        Integer nombreConges = e.getNbConges();
+
+        //Then
+        Assertions.assertThat(nombreConges.intValue()).isEqualTo(25);
+    }
+
+
     @Test
     public void getNombreRTTNow() throws EmployeException {
         //Given
@@ -164,5 +179,7 @@ public class EmployeTest {
     }
 
 
+
+    
 
 }
